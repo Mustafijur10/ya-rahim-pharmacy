@@ -37,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
             'customer' => Models\Customer::class,
             'delivery' => Models\Delivery::class,
             'shift' => Models\Shift::class,
+            'supplier' => Models\Supplier::class,
+            'supplier_payment' => Models\SupplierPayment::class,
         ]);
 
         // Brute-force protection for sign-in and SMS codes.

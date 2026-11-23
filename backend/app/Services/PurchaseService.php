@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Enums\StockMovementType;
 use App\Exceptions\BusinessException;
 use App\Models\Batch;
+use App\Models\Medicine;
 use App\Models\Purchase;
 use App\Models\Supplier;
+use App\Models\SupplierPayment;
 use App\Models\User;
 use App\Support\Sequence;
 use Illuminate\Support\Carbon;
@@ -112,6 +114,25 @@ class PurchaseService
 
             $purchase->update(['subtotal' => round($subtotal, 2), 'discount' => $discount, 'total' => $total, 'paid' => $paid]);
             Supplier::whereKey($supplier->id)->increment('balance', round($total - $paid, 2));
+
+            // Money paid at delivery shows in the supplier ledger as its own line.
+            if ($paid > 0) {
+                SupplierPayment::create([
+                    'supplier_id' => $supplier->id,
+                    'branch_id' => $user->branch_id,
+                    'purchase_id' => $purchase->id,
+                    'amount' => $paid,
+                    'method' => $data['payment_method'] ?? 'cash',
+                    'note' => 'Paid on delivery',
+                    'paid_on' => $purchase->purchased_at,
+                    'created_by' => $user->id,
+                ]);
+            }
+
+            // Remember the latest prices so the next purchase entry is pre-filled.
+            foreach ($data['items'] as $line) {
+                Medicine::whereKey($line['medicine_id'])->update(['default_cost' => $line['unit_cost'], 'default_mrp' => $line['mrp']]);
+            }
 
             return $purchase->load('items');
         });

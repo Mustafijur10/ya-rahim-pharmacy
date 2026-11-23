@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Admin\PurchaseController;
 use App\Http\Controllers\Api\Admin\SettingsController;
 use App\Http\Controllers\Api\Admin\ShiftController;
 use App\Http\Controllers\Api\Admin\StaffController;
+use App\Http\Controllers\Api\Admin\SupplierController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Rider\RiderController;
 use App\Http\Controllers\Api\Store\CatalogController;
@@ -145,6 +146,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'staff'])->group(function ()
     Route::middleware('module:rx')->group(function () {
         Route::post('orders/{order}/verify-rx', [OrderController::class, 'verifyRx']);
         Route::post('orders/{order}/reject-rx', [OrderController::class, 'rejectRx']);
+        Route::post('prescriptions/{prescription}/review', [PrescriptionController::class, 'review']);
     });
     Route::post('prescriptions', [PrescriptionController::class, 'store'])->middleware(['module:pos', 'throttle:uploads']);
 
@@ -160,6 +162,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'staff'])->group(function ()
         Route::get('inventory', [InventoryController::class, 'index']);
         Route::get('inventory/summary', [InventoryController::class, 'summary']);
         Route::get('inventory/movements', [InventoryController::class, 'movements']);
+        Route::get('inventory/export', [InventoryController::class, 'export']);
         Route::get('medicines', [MedicineController::class, 'index']);
         Route::get('medicines/references', [MedicineController::class, 'references']);
         Route::get('medicines/{medicine}', [MedicineController::class, 'show']);
@@ -168,6 +171,9 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'staff'])->group(function ()
         Route::post('medicines', [MedicineController::class, 'store']);
         Route::put('medicines/{medicine}', [MedicineController::class, 'update']);
         Route::delete('medicines/{medicine}', [MedicineController::class, 'destroy']);
+        Route::post('medicines/{medicine}/images', [MedicineController::class, 'addImage'])->middleware('throttle:uploads');
+        Route::delete('medicines/{medicine}/images', [MedicineController::class, 'removeImage']);
+        Route::post('labels/barcodes', [InventoryController::class, 'assignBarcodes']);
         Route::post('categories', [MedicineController::class, 'saveCategory']);
         Route::put('categories/{category}', [MedicineController::class, 'saveCategory']);
         Route::post('companies', [MedicineController::class, 'saveCompany']);
@@ -185,9 +191,11 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'staff'])->group(function ()
         Route::get('purchases', [PurchaseController::class, 'index']);
         Route::get('purchases/{purchase}', [PurchaseController::class, 'show']);
         Route::post('purchases', [PurchaseController::class, 'store']);
-        Route::get('suppliers', [MedicineController::class, 'suppliers']);
-        Route::post('suppliers', [MedicineController::class, 'saveSupplier']);
-        Route::put('suppliers/{supplier}', [MedicineController::class, 'saveSupplier']);
+        Route::get('suppliers', [SupplierController::class, 'index']);
+        Route::post('suppliers', [SupplierController::class, 'save']);
+        Route::put('suppliers/{supplier}', [SupplierController::class, 'save']);
+        Route::get('suppliers/{supplier}/ledger', [SupplierController::class, 'ledger']);
+        Route::post('suppliers/{supplier}/payments', [SupplierController::class, 'pay']);
     });
 
     // Customers

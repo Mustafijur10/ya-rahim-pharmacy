@@ -78,3 +78,8 @@ export function clock(value: string | null | undefined): string {
 export function daysUntil(isoDate: string): number {
   return Math.round((new Date(`${isoDate}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86_400_000);
 }
+
+/** Today's date in Dhaka as YYYY-MM-DD (for API date filters). */
+export function todayIso(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka" }).format(new Date());
+}

@@ -19,7 +19,8 @@ class ApprovalController extends Controller
     {
         $user = $request->user();
         $data = $request->validate([
-            'status' => ['nullable', 'in:pending,approved,rejected'],
+            'status' => ['nullable', 'in:pending,approved,rejected,decided'],
+            'type' => ['nullable', 'in:discount,refund,stock_adjustment,rx_release'],
             'mine' => ['nullable', 'boolean'],
         ]);
 
@@ -36,11 +37,22 @@ class ApprovalController extends Controller
         } else {
             $query->where(fn (Builder $q) => $q->whereIn('type', $decidable)->orWhere('requested_by', $user->id));
         }
-        if (! empty($data['status'])) {
+        if (($data['status'] ?? null) === 'decided') {
+            $query->whereIn('status', ['approved', 'rejected'])->reorder()->latest('decided_at');
+        } elseif (! empty($data['status'])) {
             $query->where('status', $data['status']);
         }
+        if (! empty($data['type'])) {
+            $query->where('type', $data['type']);
+        }
 
-        return ApprovalResource::collection($query->paginate(30))->additional(['can_decide' => $decidable])->response();
+        $pendingCounts = ApprovalRequest::where('branch_id', $user->branch_id)->pending()->whereIn('type', $decidable)
+            ->selectRaw('type, COUNT(*) c')->groupBy('type')->pluck('c', 'type');
+
+        return ApprovalResource::collection($query->paginate(30))->additional([
+            'can_decide' => $decidable,
+            'pending_counts' => $pendingCounts,
+        ])->response();
     }
 
     /** Cashier asks for a discount above the limit, or for an Rx medicine to be released. */

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\Role;
 use App\Models\ApprovalRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -19,7 +20,9 @@ class ApprovalResource extends JsonResource
             'data' => $this->data,
             'reason' => $this->reason,
             'decision_note' => $this->decision_note,
-            'requested_by' => $this->whenLoaded('requester', fn () => $this->requester?->only(['id', 'name'])),
+            'requested_by' => $this->whenLoaded('requester', fn () => $this->requester ? $this->requester->only(['id', 'name']) + [
+                'role_label' => Role::tryFrom((string) $this->requester->getRoleNames()->first())?->label(),
+            ] : null),
             'decided_by' => $this->whenLoaded('decider', fn () => $this->decider?->only(['id', 'name'])),
             'used' => $this->approvable_id !== null && in_array($this->type, ['discount', 'rx_release'], true),
             'created_at' => $this->created_at,

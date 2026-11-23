@@ -33,6 +33,7 @@ class OrderResource extends JsonResource
             'paid_amount' => (float) $this->paid_amount,
             'balance_due' => round($this->balanceDue(), 2),
             'payment_status' => $this->payment_status,
+            'payment_preference' => $this->payment_preference,
             'requires_rx' => $this->requires_rx,
             'customer_note' => $this->customer_note,
             'staff_note' => $this->when($staff, $this->staff_note),

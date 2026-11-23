@@ -7,6 +7,7 @@ use App\Models\Purchase;
 use App\Services\PurchaseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PurchaseController extends Controller
 {
@@ -51,6 +52,7 @@ class PurchaseController extends Controller
             'purchased_at' => ['nullable', 'date', 'before_or_equal:today'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'paid' => ['nullable', 'numeric', 'min:0'],
+            'payment_method' => ['nullable', Rule::in(['cash', 'bank', 'bkash', 'cheque'])],
             'note' => ['nullable', 'string', 'max:500'],
             'items' => ['required', 'array', 'min:1', 'max:200'],
             'items.*.medicine_id' => ['required', 'integer', 'exists:medicines,id'],

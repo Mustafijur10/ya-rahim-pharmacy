@@ -39,6 +39,8 @@ class BatchResource extends JsonResource
                 'generic' => $this->medicine->relationLoaded('generic') ? $this->medicine->generic?->name : null,
                 'company' => $this->medicine->relationLoaded('company') ? $this->medicine->company?->name : null,
                 'reorder_level' => $this->medicine->reorder_level,
+                'barcode' => $this->medicine->barcode,
+                'short_name' => trim($this->medicine->name.' '.$this->medicine->strength),
                 'reorder_level_packs' => round($this->medicine->reorder_level / $perPack, 1),
                 'rx_required' => $this->medicine->rx_required,
                 'is_cold_chain' => $this->medicine->is_cold_chain,

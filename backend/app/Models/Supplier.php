@@ -12,7 +12,12 @@ class Supplier extends Model
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean', 'balance' => 'decimal:2'];
+        return ['is_active' => 'boolean', 'balance' => 'decimal:2', 'next_visit_on' => 'date'];
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(SupplierPayment::class);
     }
 
     public function company(): BelongsTo

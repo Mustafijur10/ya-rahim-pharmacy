@@ -38,6 +38,7 @@ class PrescriptionResource extends JsonResource
                 'size' => $p->size,
                 'url' => $base.$this->id.'/pages/'.$p->id,
             ])->values()),
+            'orders' => $this->when($staff && $this->relationLoaded('orders'), fn () => $this->orders->map(fn ($o) => ['id' => $o->id, 'code' => $o->code, 'status' => $o->status->value])->values()),
             'created_at' => $this->created_at,
         ];
     }

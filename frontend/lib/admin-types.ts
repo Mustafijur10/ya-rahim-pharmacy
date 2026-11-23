@@ -1,4 +1,4 @@
-import type { Order } from "./types";
+import type { Order, OrderStatusKey, Prescription } from "./types";
 
 export type BatchRow = {
   id: number;
@@ -14,7 +14,8 @@ export type BatchRow = {
   mrp_per_pack: number;
   cost_price?: number;
   cost_per_pack?: number;
-  medicine?: { id: number; name: string; generic: string | null; company: string | null; reorder_level: number; reorder_level_packs: number; rx_required: boolean; is_cold_chain: boolean };
+  medicine?: { id: number; name: string; short_name?: string; barcode?: string | null; generic: string | null; company: string | null; reorder_level: number; reorder_level_packs: number; rx_required: boolean; is_cold_chain: boolean };
+  supplier?: { id: number; name: string } | null;
 };
 
 export type Approval = {
@@ -115,4 +116,100 @@ export const APPROVER: Record<Approval["type"], string> = {
   refund: "Manager",
   stock_adjustment: "Owner",
   rx_release: "Pharmacist",
+};
+
+/* ---------------- 7d: orders, prescriptions, approvals ---------------- */
+export type AdminPrescription = Prescription & {
+  doctor_name?: string | null;
+  contact_name?: string | null;
+  contact_phone?: string | null;
+  delivery_type?: string | null;
+  customer_note?: string | null;
+  customer?: { id: number; name: string; phone: string } | null;
+  orders?: { id: number; code: string; status: OrderStatusKey }[];
+};
+
+export type AdminOrderItem = NonNullable<Order["items"]>[number] & {
+  batch?: { id: number; batch_no: string; expiry_date: string; rack: string | null } | null;
+};
+
+export type AdminOrder = Omit<Order, "items" | "prescription" | "delivery" | "history"> & {
+  payment_preference: string | null;
+  payment_status: string | null;
+  paid_amount: number;
+  balance_due: number;
+  delivery_fee: number;
+  staff_note?: string | null;
+  cancel_reason: string | null;
+  placed_at: string | null;
+  items_count?: number;
+  customer?: { id: number; name: string; phone: string } | null;
+  pharmacist?: { name: string; registration_no: string | null } | null;
+  items?: AdminOrderItem[];
+  prescription?: AdminPrescription | null;
+  delivery?: {
+    id: number;
+    status: string;
+    rider?: { id: number; name: string; phone: string } | null;
+    courier_name: string | null;
+    cash_to_collect: number;
+    assigned_at: string | null;
+  } | null;
+  history?: { from: string | null; to: string; note: string | null; by: string | null; at: string }[];
+};
+
+export type OrderStats = {
+  new: number;
+  rx_verification: number;
+  packing: number;
+  ready_for_pickup: number;
+  out_for_delivery: number;
+  delivered_today: number;
+  cancelled_today: number;
+};
+
+export type Rider = { id: number; name: string; phone: string; active_deliveries: number; cash_held: number };
+
+export const PAY_LABEL: Record<string, string> = {
+  cod: "Cash on delivery",
+  pay_at_shop: "Pay at shop",
+  bkash: "bKash",
+  nagad: "Nagad",
+  card: "Card",
+};
+
+/* ---------------- 7e: stock ---------------- */
+export type InventorySummary = {
+  medicines: number;
+  batches: number;
+  tabs: { all: number; low: number; expiring: number; expired: number; out: number };
+  racks: string[];
+  stock_value_cost?: number;
+  stock_value_mrp?: number;
+};
+
+export type References = {
+  categories: { id: number; parent_id: number | null; name: string }[];
+  companies: { id: number; name: string }[];
+  generics: { id: number; name: string }[];
+  suppliers: { id: number; name: string; phone: string | null; balance: string }[];
+};
+
+export type Paged<T> = { data: T[]; current_page?: number; last_page?: number; total?: number; from?: number; to?: number; meta?: { current_page: number; last_page: number; total: number; from: number | null; to: number | null } };
+
+/** Laravel paginator (plain or resource) → one shape. */
+export function pageInfo(p: Paged<unknown> | undefined) {
+  const m = p?.meta ?? p;
+  return { page: m?.current_page ?? 1, last: m?.last_page ?? 1, total: m?.total ?? 0, from: m?.from ?? 0, to: m?.to ?? 0 };
+}
+
+export const MOVEMENT_LABEL: Record<string, string> = {
+  purchase: "Purchase",
+  sale: "Sale",
+  sale_return: "Customer return",
+  cancel: "Order cancelled",
+  adjustment_in: "Adjustment +",
+  adjustment_out: "Adjustment −",
+  expired: "Written off (expired)",
+  supplier_return: "Returned to supplier",
 };

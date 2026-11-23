@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/api/:path*", destination: `${API_INTERNAL_URL}/api/:path*` },
       { source: "/sanctum/:path*", destination: `${API_INTERNAL_URL}/sanctum/:path*` },
+      // Medicine photos uploaded in the admin (Laravel public disk).
+      { source: "/storage/:path*", destination: `${API_INTERNAL_URL}/storage/:path*` },
     ];
   },
 };

@@ -111,7 +111,7 @@ function Dashboard() {
       </div>
 
       <div className="dash-row">
-        <Panel title="Sales by hour — today" subtitle="৳ per hour" action={<ShopOnlineLegend line />}>
+        <Panel title="Sales by hour — today" subtitle="৳ per hour" action={<ShopOnlineLegend />}>
           <HourlyLines hours={data.hourly} locale={locale} />
         </Panel>
         <Panel title="Sales by category" subtitle="Share of today’s sales">

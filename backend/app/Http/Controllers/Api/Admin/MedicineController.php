@@ -12,6 +12,7 @@ use App\Models\Supplier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -85,6 +86,32 @@ class MedicineController extends Controller
         return response()->json(['data' => $medicine->fresh()->load('packSizes')]);
     }
 
+    /** Add a photo (shown on the website). Stored on the public disk as /storage/medicines/… */
+    public function addImage(Request $request, Medicine $medicine): JsonResponse
+    {
+        $request->validate(['image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096']]);
+        $images = $medicine->images ?? [];
+        abort_if(count($images) >= 6, 422, 'A medicine can have at most 6 photos.');
+
+        $path = $request->file('image')->store('medicines', 'public');
+        $images[] = '/storage/'.$path;
+        $medicine->update(['images' => $images]);
+
+        return response()->json(['data' => ['images' => $images]], 201);
+    }
+
+    public function removeImage(Request $request, Medicine $medicine): JsonResponse
+    {
+        $url = (string) $request->validate(['url' => ['required', 'string']])['url'];
+        $images = array_values(array_filter($medicine->images ?? [], fn ($i) => $i !== $url));
+        $medicine->update(['images' => $images]);
+        if (str_starts_with($url, '/storage/medicines/')) {
+            Storage::disk('public')->delete(substr($url, strlen('/storage/')));
+        }
+
+        return response()->json(['data' => ['images' => $images]]);
+    }
+
     /** Hides a medicine from sale. History stays. */
     public function destroy(Medicine $medicine): JsonResponse
     {
@@ -153,28 +180,6 @@ class MedicineController extends Controller
         return response()->json(['data' => $generic], $generic->wasRecentlyCreated ? 201 : 200);
     }
 
-    public function suppliers(): JsonResponse
-    {
-        return response()->json(['data' => Supplier::with('company:id,name')->withCount('purchases')->orderBy('name')->get()]);
-    }
-
-    public function saveSupplier(Request $request, ?Supplier $supplier = null): JsonResponse
-    {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:150'],
-            'company_id' => ['nullable', 'integer', 'exists:companies,id'],
-            'contact_person' => ['nullable', 'string', 'max:100'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'email' => ['nullable', 'email', 'max:150'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'is_active' => ['boolean'],
-        ]);
-        $supplier ??= new Supplier;
-        $supplier->fill($data)->save();
-
-        return response()->json(['data' => $supplier], $supplier->wasRecentlyCreated ? 201 : 200);
-    }
-
     /* ---------------- helpers ---------------- */
 
     private function validated(Request $request, ?Medicine $medicine = null): array
@@ -193,6 +198,16 @@ class MedicineController extends Controller
             'discount_percent' => ['required', 'numeric', 'min:0', 'max:100'],
             'reorder_level' => ['required', 'integer', 'min:0'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'indications' => ['nullable', 'string', 'max:5000'],
+            'side_effects' => ['nullable', 'string', 'max:5000'],
+            'storage' => ['nullable', Rule::in(['room', 'fridge', 'cool_dry'])],
+            'is_antibiotic' => ['boolean'],
+            'sell_online' => ['boolean'],
+            'allow_loose_sale' => ['boolean'],
+            'default_rack' => ['nullable', 'string', 'max:30'],
+            'vat_percent' => ['nullable', 'numeric', 'min:0', 'max:30'],
+            'default_cost' => ['nullable', 'numeric', 'min:0'],
+            'default_mrp' => ['nullable', 'numeric', 'min:0', 'gte:default_cost'],
             'is_featured' => ['boolean'],
             'is_active' => ['boolean'],
             'pack_sizes' => ['required', 'array', 'min:1', 'max:5'],
@@ -207,7 +222,16 @@ class MedicineController extends Controller
 
     private function attributes(array $data): array
     {
-        return collect($data)->except('pack_sizes')->all();
+        $attrs = collect($data)->except('pack_sizes')->all();
+        if (array_key_exists('storage', $attrs)) {
+            $attrs['storage'] ??= 'room';
+            $attrs['is_cold_chain'] = $attrs['storage'] === 'fridge';
+        }
+        if (array_key_exists('vat_percent', $attrs)) {
+            $attrs['vat_percent'] ??= 0;
+        }
+
+        return $attrs;
     }
 
     private function syncPacks(Medicine $medicine, array $packs): void

@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InventoryController extends Controller
 {
@@ -142,6 +143,51 @@ class InventoryController extends Controller
         }
 
         return response()->json($query->paginate(50));
+    }
+
+    /** Same filters as the list, as a CSV file for Excel. */
+    public function export(Request $request): StreamedResponse
+    {
+        $request->merge(['per_page' => 100]);
+        $profit = $request->user()->hasModuleAccess('profit', 'full', 'view');
+
+        return response()->streamDownload(function () use ($request, $profit) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF"); // so Excel reads Bangla/৳ correctly
+            fputcsv($out, array_filter(['Medicine', 'Generic', 'Company', 'Batch', 'Expiry', 'Stock (units)', 'Pack', 'Stock (packs)', 'Reorder at (units)', $profit ? 'Cost / unit' : null, 'MRP / unit', 'Rack']));
+            $page = 1;
+            do {
+                $request->merge(['page' => $page]);
+                $json = $this->index($request)->getData(true);
+                foreach ($json['data'] as $b) {
+                    $m = $b['medicine'] ?? [];
+                    fputcsv($out, array_values(array_filter([
+                        $m['name'] ?? '', $m['generic'] ?? '', $m['company'] ?? '', $b['batch_no'], $b['expiry_date'], $b['quantity'], $b['pack_name'] ?? '', $b['quantity_packs'],
+                        $m['reorder_level'] ?? '', $profit ? ($b['cost_price'] ?? '') : null, $b['mrp'], $b['rack'] ?? '',
+                    ], fn ($v) => $v !== null)));
+                }
+                $page++;
+            } while ($page <= ($json['meta']['last_page'] ?? 1) && $page <= 100);
+            fclose($out);
+        }, 'inventory-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Barcode labels: gives every listed medicine without a barcode an internal one
+     * ("2" + 11-digit id, EAN-style prefix reserved for in-store codes) so the POS scanner finds it.
+     */
+    public function assignBarcodes(Request $request): JsonResponse
+    {
+        $ids = $request->validate(['medicine_ids' => ['required', 'array', 'max:200'], 'medicine_ids.*' => ['integer']])['medicine_ids'];
+        $result = [];
+        foreach (Medicine::whereIn('id', $ids)->get() as $m) {
+            if (! $m->barcode) {
+                $m->update(['barcode' => '2'.str_pad((string) $m->id, 11, '0', STR_PAD_LEFT)]);
+            }
+            $result[$m->id] = $m->barcode;
+        }
+
+        return response()->json(['data' => $result]);
     }
 
     /** @return list<int> active medicines with no sellable stock */

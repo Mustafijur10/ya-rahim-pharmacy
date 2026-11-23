@@ -125,7 +125,7 @@
 /* ------------------------------------------------------------------ */
 @layer components {
   /* Layout */
-  .container-page { @apply mx-auto w-full max-w-[1280px] px-6; }
+  .container-page { @apply mx-auto w-full max-w-[1440px] px-6; }
   .sr-only-label { @apply sr-only; }
 
   /* Buttons (all at least 44px tall) */
@@ -207,7 +207,7 @@
 
   /* Tabs */
   .tabs { @apply flex overflow-x-auto border-b border-solid border-line; }
-  .tab { @apply cursor-pointer whitespace-nowrap border-0 border-b-2 border-solid border-transparent bg-transparent px-5 py-4 text-muted; }
+  .tab { @apply inline-flex cursor-pointer items-center gap-2 whitespace-nowrap border-0 border-b-2 border-solid border-transparent bg-transparent px-5 py-4 text-muted; }
   .tab-active { @apply border-brand font-medium text-brand; }
 
   /* Tables */
@@ -336,7 +336,7 @@
   .admin-topbar { @apply sticky top-0 z-30 flex min-h-16 items-center gap-2.5 border-b border-solid border-line bg-card/95 px-4 py-3 backdrop-blur md:px-7 md:py-3.5; }
   /* Each admin page's title + actions live in the top bar (see AdminHeader). */
   .topbar-slot { @apply flex min-w-0 flex-1 items-center gap-3; }
-  .topbar-title { @apply flex min-w-0 flex-1 flex-col gap-0.5; }
+  .topbar-title { @apply flex min-w-[150px] flex-1 flex-col gap-0.5; }
   .topbar-h1 { @apply m-0 truncate text-lg leading-tight font-bold md:text-[22px]; }
   .topbar-sub { @apply m-0 hidden truncate text-[13px] text-muted md:block; }
   .topbar-actions { @apply flex shrink-0 items-center gap-2; }
@@ -551,8 +551,8 @@
   .link-pending-corner { @apply absolute top-1 right-[calc(50%-20px)] ml-0; }
 
   /* ---------------- Admin 7b: dashboards ---------------- */
-  /* Dashboard: KPI tiles + panels (design: 12px corners, 18–20px padding) */
-  .kpi-grid { @apply grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-4; }
+  /* Dashboard: KPI tiles + panels (design: 12px corners, 18-20px padding) */
+  .kpi-grid { @apply grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6; }
   .kpi-grid-4 { @apply grid-cols-[repeat(auto-fit,minmax(220px,1fr))]; }
   .admin-main .kpi-tile { @apply gap-2 rounded-xl p-[18px]; }
   .kpi-tile-link { @apply text-ink no-underline transition-shadow hover:text-ink hover:shadow-md; }
@@ -572,43 +572,16 @@
   .dash-row { @apply grid items-start gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(300px,1fr)]; }
   .dash-row > .panel { @apply h-full; }
 
-  /* Charts (SVG; colours from the design's chart palette) */
-  .chart { @apply h-auto w-full overflow-visible; }
-  .chart-grid { stroke: var(--color-surface); stroke-width: 1; }
-  .chart-baseline { stroke: var(--color-line-strong); stroke-width: 1; }
-  .chart-marker { stroke: var(--color-line-strong); stroke-dasharray: 3 3; }
-  .chart-axis { fill: var(--color-muted); font-size: 11px; }
-  .chart-axis-strong { fill: var(--color-ink); }
-  .chart-bar-shop { fill: var(--color-chart-1); }
-  .chart-bar-online { fill: var(--color-chart-2); }
-  .chart-line-shop polyline { stroke: var(--color-chart-1); }
-  .chart-line-shop circle { fill: var(--color-chart-1); stroke: var(--color-card); }
-  .chart-line-online polyline { stroke: var(--color-chart-2); }
-  .chart-line-online circle { fill: var(--color-chart-2); stroke: var(--color-card); }
+  /* Charts (ApexCharts; series colours come from --color-chart-1…5 above) */
+  .chart-loading { @apply block h-[260px] w-full animate-pulse rounded-lg bg-surface; }
+  .panel .apexcharts-canvas { @apply mx-auto; }
+  .apexcharts-tooltip.apexcharts-theme-light { @apply rounded-lg! border-line! shadow-lg!; }
+  .apexcharts-tooltip-title { @apply font-medium!; }
+  .apexcharts-legend-text { @apply text-[13px]!; }
   .legend { @apply inline-flex items-center gap-1.5; }
   .legend::before { content: ""; @apply h-3 w-3 rounded-[3px]; }
-  .legend-line::before { @apply h-[3px] rounded-sm; }
   .legend-shop::before { @apply bg-chart-1; }
   .legend-online::before { @apply bg-chart-2; }
-  .legend-swatch { @apply h-3 w-3 rounded-[3px]; }
-  .series-0 { stroke: var(--color-chart-1); } .series-bg-0 { @apply bg-chart-1; }
-  .series-1 { stroke: var(--color-chart-2); } .series-bg-1 { @apply bg-chart-2; }
-  .series-2 { stroke: var(--color-chart-3); } .series-bg-2 { @apply bg-chart-3; }
-  .series-3 { stroke: var(--color-chart-4); } .series-bg-3 { @apply bg-chart-4; }
-  .series-4 { stroke: var(--color-chart-5); } .series-bg-4 { @apply bg-chart-5; }
-  .donut { @apply flex flex-wrap items-center justify-center gap-[18px]; }
-  .donut-track { stroke: var(--color-surface); }
-  .donut-value { fill: var(--color-ink); font-size: 20px; font-weight: 700; }
-  .donut-legend { @apply m-0 flex min-w-[180px] flex-1 list-none flex-col gap-2.5 p-0; }
-  .donut-legend li { @apply grid grid-cols-[12px_1fr_auto_auto] items-center gap-2 text-[13px]; }
-  .donut-amount { @apply min-w-14 text-right text-muted; }
-  .top-bars { @apply m-0 flex list-none flex-col gap-3 p-0; }
-  .top-bars li { @apply grid grid-cols-[130px_1fr_76px] items-center gap-2.5 text-[13px]; }
-  .top-bar { @apply block h-3.5 w-full; }
-  .top-bar-fill { fill: var(--color-chart-1); }
-  .gauge-track { stroke: var(--color-surface); }
-  .gauge-fill { stroke: var(--color-chart-1); }
-  .gauge-value { fill: var(--color-ink); font-size: 30px; font-weight: 700; }
   .target-stats { @apply grid w-full grid-cols-3 gap-2 text-center; }
   .target-stats > div { @apply rounded-lg border border-solid border-line bg-surface/50 p-2; }
   .share-bar { @apply block h-2 w-full; }
@@ -626,6 +599,87 @@
 
   .start-sale { @apply flex items-center gap-4 rounded-[20px] bg-brand p-5 text-white no-underline shadow-sm transition-colors hover:bg-brand-dark hover:text-white; }
   .kbd-lg { @apply border-white/40 bg-white/15 px-2.5 py-1.5 text-base font-bold text-white; }
+
+  /* ---------------- Admin 7d: orders, prescriptions & approvals ---------------- */
+  .order-search { @apply flex h-[42px] w-[min(320px,60vw)] items-center gap-2 rounded-[10px] border border-solid border-line-strong bg-card px-3 text-muted; }
+  .order-search input { @apply min-w-0 flex-1 border-0 bg-transparent text-sm text-ink outline-none; }
+  .stage-grid { @apply grid grid-cols-2 gap-2.5 sm:grid-cols-4 xl:grid-cols-7; }
+  .stage { @apply flex cursor-pointer flex-col gap-1 rounded-xl border border-solid border-line bg-card px-3.5 py-3 text-left text-ink hover:border-line-strong; }
+  .stage-active { @apply border-2 border-brand hover:border-brand dark:border-brand-line; }
+  .stage-dot { @apply h-2 w-2 rounded-full; }
+  .stage-dot-new { @apply bg-new; }
+  .stage-dot-rx { @apply bg-pending; }
+  .stage-dot-packing { @apply bg-done; }
+  .stage-dot-transit { @apply bg-transit; }
+  .stage-dot-done { @apply bg-chart-1; }
+  .stage-dot-cancelled { @apply bg-muted; }
+  .orders-layout { @apply grid items-start gap-5 xl:grid-cols-[minmax(320px,380px)_minmax(0,1fr)]; }
+  .order-queue { @apply overflow-hidden rounded-xl border border-solid border-line bg-card xl:sticky xl:top-24; }
+  .order-queue-head { @apply flex items-center justify-between gap-2 border-b border-solid border-line px-4 py-3.5 font-bold; }
+  .order-queue ul { @apply max-h-[70vh] overflow-y-auto; }
+  .order-row { @apply flex w-full cursor-pointer flex-col gap-0.5 border-0 border-t border-l-[3px] border-solid border-t-surface border-l-transparent bg-card px-4 py-3.5 text-left text-ink hover:bg-surface/60; }
+  .order-row-active { @apply border-l-brand bg-brand-tint hover:bg-brand-tint dark:border-l-brand-line; }
+  .order-detail { @apply gap-[18px]; }
+  .order-tag { @apply rounded-md px-2.5 py-1 text-xs font-bold whitespace-nowrap; }
+  .order-tag-new { @apply bg-accent-tint text-accent-dark dark:text-accent-pale; }
+  .order-tag-rx { @apply bg-warn-tint text-warn dark:text-warn-ink; }
+  .order-tag-packing { @apply bg-brand-tint text-brand-dark dark:text-brand-line; }
+  .order-tag-transit { @apply bg-brand-tint text-transit dark:text-brand-line; }
+  .order-tag-done { @apply bg-brand-tint text-brand-dark dark:text-brand-line; }
+  .order-tag-cancelled { @apply bg-surface text-muted; }
+  .order-line { @apply flex items-start gap-2.5 rounded-xl border border-solid border-line p-3; }
+  .order-line-ok { @apply shrink-0 text-xs font-bold text-brand-dark dark:text-brand-line; }
+  .order-line-check { @apply shrink-0 text-xs font-bold text-warn dark:text-[#FFCC80]; }
+  .order-line-otc { @apply shrink-0 text-xs font-bold text-muted; }
+  .order-sums { @apply m-0 grid grid-cols-[1fr_auto] gap-x-6 gap-y-1.5 text-sm; }
+  .order-sums dt { @apply text-muted; }
+  .order-sums dd { @apply m-0 text-right tabular-nums; }
+  .order-actions { @apply flex flex-wrap items-center gap-2.5 border-t border-solid border-line pt-4; }
+  .order-reject { @apply border-[1.5px] border-rx text-rx hover:bg-rx-tint hover:text-rx disabled:opacity-50; }
+  .order-rider { @apply h-12 w-auto min-w-48; }
+  .order-history summary { @apply cursor-pointer text-sm font-medium text-brand dark:text-brand-line; }
+  .order-history ol { @apply m-0 mt-3 flex list-none flex-col gap-2 p-0; }
+  .order-history li { @apply flex flex-wrap items-center gap-2 text-sm capitalize; }
+  .rx-view { @apply flex h-[300px] items-center justify-center overflow-hidden rounded-xl border border-solid border-line bg-surface text-muted; }
+  .rx-view-zoom { @apply h-[460px] overflow-auto; }
+  .rx-view-link { @apply flex h-full w-full items-center justify-center; }
+  .rx-view-img { @apply max-h-full max-w-full object-contain transition-transform; }
+  .rx-tool { @apply inline-flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-[10px] border border-solid border-line-strong bg-card text-[13px] font-medium text-ink disabled:cursor-not-allowed disabled:opacity-50; }
+  .approval-card { @apply flex flex-wrap items-center gap-4 rounded-[10px] border border-l-4 border-solid border-line border-l-brand bg-card px-[18px] py-4 dark:border-l-brand-line; }
+  .approval-note { @apply h-[42px] w-[200px]; }
+  .chip-brand { @apply border-brand bg-brand text-white; }
+
+  /* ---------------- Admin 7e: inventory, medicines, purchases, suppliers, labels ---------------- */
+  .btn-outline-brand { @apply border-[1.5px] border-brand text-brand dark:border-brand-line dark:text-brand-line; }
+  .table-card { @apply min-w-0 overflow-hidden rounded-xl border border-solid border-line bg-card; }
+  .table-card-filters { @apply flex flex-wrap gap-2.5 border-b border-solid border-line px-4 py-3.5; }
+  .table-card-foot { @apply flex flex-wrap items-center justify-between gap-2.5 border-t border-solid border-line px-4 py-3 text-[13px] text-muted; }
+  .table-card .table th { @apply bg-surface/60; }
+  .page-btn { @apply h-9 min-w-9 cursor-pointer rounded-lg border border-solid border-line-strong bg-card px-2 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-40; }
+  .page-btn-active { @apply border-brand bg-brand font-medium text-white; }
+  .row-selected td { @apply bg-brand-tint/60; }
+  .form-layout { @apply grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]; }
+  .form-grid { @apply grid gap-4 sm:grid-cols-2; }
+  .form-grid-4 { @apply lg:grid-cols-4; }
+  .pack-row { @apply flex flex-wrap items-center gap-2; }
+  .pack-row .input { @apply h-10 w-28; }
+  .photo-tile { @apply relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl border border-solid border-line bg-surface; }
+  .photo-add { @apply cursor-pointer flex-col gap-1 border-dashed border-line-strong text-sm text-muted hover:border-brand hover:text-brand; }
+  .photo-remove { @apply absolute top-1 right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-0 bg-card/90 text-rx shadow; }
+  .purchase-table td { @apply py-2.5 align-top; }
+  .purchase-table .input, .purchase-table .select { @apply h-10; }
+  .labels-layout { @apply grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px]; }
+  .label-sheet { @apply flex flex-wrap gap-2.5 rounded-lg bg-surface p-4; }
+  .label { @apply flex flex-col gap-[3px] overflow-hidden rounded border border-dashed border-muted bg-white p-2 text-[11px] leading-tight text-black; }
+  .label-38x25 { @apply w-[190px]; }
+  .label-50x30 { @apply w-[250px]; }
+  .label-name { @apply truncate text-xs; }
+  .label-sub { @apply truncate; }
+  .label-barcode { @apply block h-[42px] w-full; }
+  .label-barcode-empty { @apply flex h-[42px] items-center justify-center border border-dashed border-muted text-[10px] text-muted; }
+  .label-foot { @apply flex justify-between; }
+  .label-extra { @apply hidden; }
+  .label-more { @apply m-0 w-full text-center text-sm text-muted; }
 
   /* 80 mm receipt (screen preview; print rules below) */
   .receipt { @apply flex w-[302px] flex-col gap-1 bg-white p-4 font-mono text-[12px] leading-snug text-black shadow-md; }
@@ -718,4 +772,13 @@
   .receipt { width: 72mm; padding: 0; box-shadow: none; font-size: 11px; color: #000; }
   /* A4 invoice uses its own named page size. */
   .invoice { page: invoice; max-width: none; padding: 0; box-shadow: none; }
+  /* Barcode labels: A4 sticker sheet, only the labels print. */
+  .label-sheet { page: labels; background: #fff; padding: 0; gap: 2mm; }
+  .no-print-bg { border: 0; padding: 0; background: #fff; }
+  .labels-layout { display: block; }
+  .label { break-inside: avoid; border-style: solid; border-color: #bbb; }
+  .label-extra { display: flex; }
+  .label-38x25 { width: 38mm; height: 25mm; }
+  .label-50x30 { width: 50mm; height: 30mm; }
 }
+@page labels { size: A4; margin: 6mm; }

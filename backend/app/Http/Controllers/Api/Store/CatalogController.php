@@ -26,7 +26,7 @@ class CatalogController extends Controller
     {
         $branch = Branch::default();
 
-        $mostOrdered = Medicine::active()
+        $mostOrdered = Medicine::forStore()
             ->with(StoreCatalog::CARD_RELATIONS)
             ->orderByDesc('is_featured')
             ->orderByDesc('sold_count')
@@ -94,7 +94,7 @@ class CatalogController extends Controller
         $slugs = fn (?string $csv) => array_values(array_filter(array_map('trim', explode(',', (string) $csv))));
 
         // Base: search + the page's category. Facet counts are taken from this, before the filters.
-        $base = Medicine::active()->search($data['search'] ?? null);
+        $base = Medicine::forStore()->search($data['search'] ?? null);
         $category = null;
         if (! empty($data['category'])) {
             $category = Category::active()->where('slug', $data['category'])->first();
@@ -187,7 +187,7 @@ class CatalogController extends Controller
     {
         $q = (string) $request->validate(['q' => ['required', 'string', 'min:2', 'max:60']])['q'];
 
-        $medicines = Medicine::active()
+        $medicines = Medicine::forStore()
             ->with(StoreCatalog::CARD_RELATIONS)
             ->search($q)
             ->orderByDesc('sold_count')
@@ -199,7 +199,7 @@ class CatalogController extends Controller
 
     public function show(string $slug): JsonResponse
     {
-        $medicine = Medicine::active()->where('slug', $slug)->firstOrFail();
+        $medicine = Medicine::forStore()->where('slug', $slug)->firstOrFail();
 
         return response()->json(['data' => $this->catalog->detail($medicine, Branch::default()->id)]);
     }

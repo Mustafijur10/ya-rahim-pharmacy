@@ -30,6 +30,12 @@ class Medicine extends Model
             'is_active' => 'boolean',
             'discount_percent' => 'decimal:2',
             'images' => 'array',
+            'is_antibiotic' => 'boolean',
+            'sell_online' => 'boolean',
+            'allow_loose_sale' => 'boolean',
+            'vat_percent' => 'decimal:2',
+            'default_cost' => 'float',
+            'default_mrp' => 'float',
         ];
     }
 
@@ -88,6 +94,12 @@ class Medicine extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /** Active and switched on for the website ("Sell online"). */
+    public function scopeForStore(Builder $query): Builder
+    {
+        return $query->where('is_active', true)->where('sell_online', true);
     }
 
     /** SQL for sellable units of this medicine in a branch (not expired, active batches). */

@@ -1,5 +1,14 @@
-import AdminPlaceholder from "@/components/admin/AdminPlaceholder";
+"use client";
 
-export default function Page() {
-  return <AdminPlaceholder titleKey="expiry" module="inventory" levels={["full", "view"]} step="Step 7" description="Expired and soon-to-expire batches." />;
+import { useEffect } from "react";
+import { PageLoader } from "@/components/ui/Feedback";
+import { useRouter } from "@/i18n/navigation";
+
+/** "Expiry alerts" in the sidebar is the inventory list filtered to batches expiring within 90 days. */
+export default function ExpiryPage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/admin/inventory?tab=expiring");
+  }, [router]);
+  return <PageLoader />;
 }
